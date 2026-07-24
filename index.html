@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Tracking System - Jangir IT Solution</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen">
+
+  <!-- ==================== 1. LOGIN SCREEN ==================== -->
+  <div id="loginScreen" class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Jangir IT Solution</h1>
+        <p class="text-slate-500 text-sm mt-1">Employee & Admin Portal</p>
+      </div>
+
+      <div class="flex rounded-lg bg-slate-100 p-1 mb-6">
+        <button id="roleEmpBtn" type="button" onclick="setRole('employee')" class="flex-1 py-2 text-sm font-semibold rounded-md bg-white shadow-sm text-blue-600 transition">Employee Login</button>
+        <button id="roleAdminBtn" type="button" onclick="setRole('admin')" class="flex-1 py-2 text-sm font-semibold text-slate-600 transition">Admin Login</button>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Username / ID</label>
+          <input type="text" id="loginUsername" required placeholder="Enter username" class="w-full p-3 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full p-3 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition">
+          Log In →
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ==================== 2. EMPLOYEE DASHBOARD ==================== -->
+  <div id="employeeDashboard" class="hidden min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+      
+      <!-- Top Bar -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800" id="empWelcomeName">Welcome, Employee</h2>
+          <p class="text-xs text-slate-500" id="empWelcomeId">Emp ID: EMP-101</p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button id="checkOutBtn" onclick="handleCheckOut()" class="hidden bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition">
+            🔴 Check-Out Today (5 PM - 6 PM)
+          </button>
+          <button onclick="toggleBackdatedForm()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center gap-1">
+            📜 + Import Old Data
+          </button>
+          <button onclick="logout()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-2 rounded-lg font-semibold">Logout</button>
+        </div>
+      </div>
+
+      <!-- Attendance Status Banner -->
+      <div id="attendanceStatusBanner" class="hidden p-4 rounded-xl text-sm font-semibold border flex flex-col md:flex-row justify-between items-center gap-2 bg-emerald-50 border-emerald-200 text-emerald-800">
+        <span id="attendanceStatusText">Checked In: 10:00 AM</span>
+        <span id="workingHoursText" class="text-xs bg-emerald-200 text-emerald-900 px-3 py-1 rounded-full font-bold">Active Working</span>
+      </div>
+
+      <!-- BACKDATED / NOTEBOOK DATA IMPORT PANEL -->
+      <div id="backdatedPanel" class="hidden bg-amber-50 border-2 border-amber-300 p-6 rounded-xl shadow-md space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-base font-bold text-amber-900">📑 Add Notebook / Old Excel Work Record</h3>
+            <p class="text-xs text-amber-700">Purani dates ka data feed karne ke liye date select karke details bharein.</p>
+          </div>
+          <button onclick="toggleBackdatedForm()" class="text-amber-900 font-bold text-lg">&times;</button>
+        </div>
+
+        <form onsubmit="addClientRecord(event, true)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-amber-800 mb-1">Original Calling Date *</label>
+            <input type="date" id="pastCallDate" required class="w-full p-2.5 border border-amber-300 rounded-lg text-sm bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-amber-800 mb-1">Client Name *</label>
+            <input type="text" id="pastClientName" required placeholder="Client Name" class="w-full p-2.5 border border-amber-300 rounded-lg text-sm bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-amber-800 mb-1">Business Name *</label>
+            <input type="text" id="pastBusinessName" required placeholder="Business Name" class="w-full p-2.5 border border-amber-300 rounded-lg text-sm bg-white">
+          </div>
+          <input type="tel" id="pastMobileNumber" required placeholder="Mobile Number *" class="p-2.5 border border-amber-300 rounded-lg text-sm bg-white">
+          <input type="text" id="pastRequirement" required placeholder="Requirement *" class="p-2.5 border border-amber-300 rounded-lg text-sm bg-white">
+          <input type="text" id="pastRemarks" placeholder="Remarks (Notebook notes)" class="p-2.5 border border-amber-300 rounded-lg text-sm bg-white">
+
+          <button type="submit" class="md:col-span-3 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-sm transition shadow">
+            ✓ Save Old Record to System
+          </button>
+        </form>
+      </div>
+
+      <!-- Selfie Verification & Check-In Panel -->
+      <div id="selfieSection" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-800 mb-1">📸 Daily Check-In (10:00 AM - 11:00 AM)</h3>
+        <p class="text-xs text-amber-600 font-semibold mb-4">Note: Check-In is strictly allowed only between 10:00 AM to 11:00 AM.</p>
+
+        <div class="flex flex-col items-center space-y-4">
+          <div class="relative w-64 h-48 bg-black rounded-lg overflow-hidden border-2 border-slate-300">
+            <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
+            <canvas id="photoCanvas" class="hidden w-full h-full object-cover"></canvas>
+          </div>
+
+          <div class="flex space-x-3">
+            <button type="button" onclick="startCamera()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold">Open Camera</button>
+            <button type="button" onclick="takeSelfie()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">Capture Selfie 📸</button>
+            <button type="button" onclick="verifyCheckIn()" id="verifyBtn" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hidden">🟢 Check-In & Unlock Panel ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Client Work Panel -->
+      <div id="empWorkPanel" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="text-lg font-bold text-slate-800 mb-4">Add Today's Client Call / Lead</h3>
+          <form onsubmit="addClientRecord(event, false)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="text" id="clientName" required placeholder="Client Name *" class="p-2.5 border rounded-lg text-sm">
+            <input type="text" id="businessName" required placeholder="Business Name *" class="p-2.5 border rounded-lg text-sm">
+            <input type="tel" id="mobileNumber" required placeholder="Mobile Number *" class="p-2.5 border rounded-lg text-sm">
+            <input type="text" id="requirement" required placeholder="Requirement *" class="p-2.5 border rounded-lg text-sm">
+            <input type="text" id="remarks" placeholder="Remarks" class="p-2.5 border rounded-lg text-sm">
+            <input type="date" id="followUpDate" required class="p-2.5 border rounded-lg text-sm">
+
+            <button type="submit" class="md:col-span-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition">
+              + Save Today's Client Record
+            </button>
+          </form>
+        </div>
+
+        <!-- All Records Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b bg-slate-50 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-800">My Work Records</h3>
+            <span class="text-xs bg-slate-200 px-2.5 py-1 rounded-full font-semibold text-slate-600" id="totalRecordCount">0 Records</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-semibold">
+                <tr>
+                  <th class="p-3 border-b">Call Date</th>
+                  <th class="p-3 border-b">Client</th>
+                  <th class="p-3 border-b">Business</th>
+                  <th class="p-3 border-b">Mobile</th>
+                  <th class="p-3 border-b">Requirement</th>
+                  <th class="p-3 border-b">Remarks</th>
+                  <th class="p-3 border-b">Type</th>
+                </tr>
+              </thead>
+              <tbody id="clientTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==================== 3. ADMIN DASHBOARD ==================== -->
+  <div id="adminDashboard" class="hidden min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+      
+      <!-- Header -->
+      <div class="bg-slate-900 text-white p-6 rounded-xl flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold">Admin Tracking & Deal Management</h1>
+          <p class="text-xs text-slate-400">Jangir IT Solution</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="clearAllSystemData()" class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded-lg transition">🗑️ Clear All Data</button>
+          <button onclick="logout()" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg">Logout</button>
+        </div>
+      </div>
+
+      <!-- Add Employee Credentials -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-4">Register Employee & Set Fixed Base Salary</h2>
+        <form onsubmit="addEmployee(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <input type="text" id="newEmpId" required placeholder="Emp ID (EMP-102)" class="p-2.5 border rounded-lg text-sm">
+          <input type="text" id="newEmpName" required placeholder="Full Name" class="p-2.5 border rounded-lg text-sm">
+          <input type="text" id="newEmpUser" required placeholder="Assign Username" class="p-2.5 border rounded-lg text-sm">
+          <input type="password" id="newEmpPass" required placeholder="Assign Password" class="p-2.5 border rounded-lg text-sm">
+          <input type="number" id="newEmpBaseSalary" required placeholder="Base Salary (₹)" class="p-2.5 border rounded-lg text-sm">
+          
+          <button type="submit" class="md:col-span-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-sm transition">+ Register Employee</button>
+        </form>
+      </div>
+
+      <!-- DAILY ATTENDANCE & WORKING HOURS REPORT -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200 bg-slate-50">
+          <h2 class="text-lg font-bold text-slate-800">⏰ Daily Attendance & Working Hours Report</h2>
+          <p class="text-xs text-slate-500">Check-in, Check-out and Calculated Total Working Hours.</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3 border-b">Selfie</th>
+                <th class="p-3 border-b">Emp ID & Name</th>
+                <th class="p-3 border-b">Check-In Time</th>
+                <th class="p-3 border-b">Check-Out Time</th>
+                <th class="p-3 border-b">Total Worked Hours</th>
+                <th class="p-3 border-b">Status</th>
+              </tr>
+            </thead>
+            <tbody id="adminAttendanceTable" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALL EMPLOYEE CALL LOGS & NOTEBOOK DATA -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200 bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">📞 Employee Call Logs & Notebook Records</h2>
+          </div>
+          <select id="filterEmpSelect" onchange="renderAdminDashboard()" class="p-2 border rounded-lg text-xs font-semibold bg-white">
+          </select>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3 border-b">Employee</th>
+                <th class="p-3 border-b">Call Date</th>
+                <th class="p-3 border-b">Client Name</th>
+                <th class="p-3 border-b">Business</th>
+                <th class="p-3 border-b">Mobile</th>
+                <th class="p-3 border-b">Requirement</th>
+                <th class="p-3 border-b">Remarks</th>
+                <th class="p-3 border-b">Entry Type</th>
+              </tr>
+            </thead>
+            <tbody id="adminCallLogsBody" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADD NEW PROJECT / DEAL ENTRY FORM -->
+      <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-md space-y-4">
+        <div>
+          <h2 class="text-lg font-bold text-emerald-400">➕ Add Closed Project Deal</h2>
+          <p class="text-xs text-slate-300">Daily converted project add karein. 20% commission auto-calculate hoga.</p>
+        </div>
+
+        <form onsubmit="addNewProjectDeal(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <select id="dealEmpSelect" required class="p-2.5 rounded-lg text-slate-900 text-sm font-semibold outline-none">
+          </select>
+          <input type="text" id="dealClientName" required placeholder="Client / Business Name" class="p-2.5 rounded-lg text-slate-900 text-sm outline-none">
+          <input type="number" id="dealProjectAmount" required placeholder="Deal Amount (₹)" class="p-2.5 rounded-lg text-slate-900 text-sm outline-none">
+          
+          <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold p-2.5 rounded-lg text-sm transition">
+            + Save Deal & Add 20%
+          </button>
+        </form>
+      </div>
+
+      <!-- Employee Payroll & Payment Slip Control -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200 bg-slate-50">
+          <h2 class="text-lg font-bold text-slate-800">Employee Payroll Ledger & Salary Slip Status</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-100 text-slate-600 uppercase text-xs font-semibold">
+              <tr>
+                <th class="p-3 border-b">Selfie</th>
+                <th class="p-3 border-b">Emp ID & Name</th>
+                <th class="p-3 border-b">Base Salary</th>
+                <th class="p-3 border-b">Total Converted Deals</th>
+                <th class="p-3 border-b">20% Incentive Total</th>
+                <th class="p-3 border-b">Net Payable Amount</th>
+                <th class="p-3 border-b text-center">Generate Slip</th>
+              </tr>
+            </thead>
+            <tbody id="adminEmpSummaryTable" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==================== 4. PRINTABLE SALARY SLIP MODAL ==================== -->
+  <div id="salarySlipModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-6">
+      <div class="border-b pb-4 flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">JANGIR IT SOLUTION</h2>
+          <p class="text-xs text-slate-500">Official Salary & 20% Incentive Statement</p>
+        </div>
+        <button onclick="closeSalaryModal()" class="text-2xl font-bold text-slate-400 hover:text-black">&times;</button>
+      </div>
+
+      <div class="space-y-4 text-sm" id="slipContent">
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-4 border-t">
+        <button onclick="closeSalaryModal()" class="bg-slate-200 text-slate-700 text-xs px-4 py-2 rounded-lg font-semibold">Close</button>
+        <button onclick="window.print()" class="bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-semibold">🖨️ Print Slip</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    function getStoredEmployees() {
+      const stored = localStorage.getItem('agency_employees');
+      if (stored) return JSON.parse(stored);
+      return [
+        {
+          id: "EMP-101",
+          name: "Rahul Sharma",
+          user: "EMP-101",
+          pass: "123456",
+          baseSalary: 12000,
+          selfie: null,
+          checkInTime: null,
+          checkInTimestamp: null,
+          checkOutTime: null,
+          totalWorkHours: null,
+          isCheckedIn: false,
+          records: [],
+          deals: []
+        }
+      ];
+    }
+
+    function saveEmployeesToStorage() {
+      localStorage.setItem('agency_employees', JSON.stringify(employees));
+    }
+
+    let employees = getStoredEmployees();
+    let currentRole = 'employee';
+    let loggedInUser = null;
+    let selfieDataUrl = null;
+
+    function setRole(role) {
+      currentRole = role;
+      if(role === 'employee') {
+        document.getElementById('roleEmpBtn').className = "flex-1 py-2 text-sm font-semibold rounded-md bg-white shadow-sm text-blue-600 transition";
+        document.getElementById('roleAdminBtn').className = "flex-1 py-2 text-sm font-semibold text-slate-600 transition";
+      } else {
+        document.getElementById('roleAdminBtn').className = "flex-1 py-2 text-sm font-semibold rounded-md bg-white shadow-sm text-blue-600 transition";
+        document.getElementById('roleEmpBtn').className = "flex-1 py-2 text-sm font-semibold text-slate-600 transition";
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+
+      if(currentRole === 'admin') {
+        if(u === 'admin' && p === 'admin123') {
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('adminDashboard').classList.remove('hidden');
+          renderAdminDashboard();
+        } else alert('Invalid Admin Credentials!');
+      } else {
+        employees = getStoredEmployees();
+        const emp = employees.find(e => e.user === u && e.pass === p);
+        if(emp) {
+          loggedInUser = emp;
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('employeeDashboard').classList.remove('hidden');
+          document.getElementById('empWelcomeName').innerText = "Welcome, " + emp.name;
+          document.getElementById('empWelcomeId').innerText = "Emp ID: " + emp.id;
+          
+          if(emp.isCheckedIn) {
+            showCheckedInState();
+          }
+        } else alert('Invalid Credentials!');
+      }
+    }
+
+    function logout() { location.reload(); }
+
+    function toggleBackdatedForm() {
+      document.getElementById('backdatedPanel').classList.toggle('hidden');
+    }
+
+    // Camera Features
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById('webcam').srcObject = stream;
+      } catch (err) { alert('Camera access denied!'); }
+    }
+
+    function takeSelfie() {
+      const video = document.getElementById('webcam');
+      const canvas = document.getElementById('photoCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      selfieDataUrl = canvas.toDataURL('image/png');
+      
+      canvas.classList.remove('hidden');
+      video.classList.add('hidden');
+      document.getElementById('verifyBtn').classList.remove('hidden');
+    }
+
+    // Check-In with Strict 10 AM - 11 AM Time Window Rule
+    function verifyCheckIn() {
+      if(!selfieDataUrl) return;
+
+      const now = new Date();
+      const currentHour = now.getHours(); // 24-hour format
+
+      // Strict Condition: 10:00 AM (10) to 11:00 AM (11)
+      if (currentHour < 10) {
+        alert("⚠️ Check-In allowed nahi hai! Office Check-In time subah 10:00 AM se shuru hota hai.");
+        return;
+      }
+      if (currentHour >= 11) {
+        alert("⚠️ Late Check-In! Check-In window (10:00 AM - 11:00 AM) close ho chuki hai.");
+        return;
+      }
+
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      
+      const empIndex = employees.findIndex(e => e.id === loggedInUser.id);
+      if(empIndex !== -1) {
+        employees[empIndex].selfie = selfieDataUrl;
+        employees[empIndex].checkInTime = timeStr;
+        employees[empIndex].checkInTimestamp = now.getTime();
+        employees[empIndex].checkOutTime = null;
+        employees[empIndex].totalWorkHours = null;
+        employees[empIndex].isCheckedIn = true;
+        loggedInUser = employees[empIndex];
+        saveEmployeesToStorage();
+      }
+
+      showCheckedInState();
+      alert("🟢 Check-In Successful at " + timeStr);
+    }
+
+    function showCheckedInState() {
+      document.getElementById('selfieSection').classList.add('hidden');
+      document.getElementById('empWorkPanel').classList.remove('hidden');
+      document.getElementById('checkOutBtn').classList.remove('hidden');
+      
+      const banner = document.getElementById('attendanceStatusBanner');
+      banner.classList.remove('hidden');
+      
+      if(loggedInUser.checkOutTime) {
+        document.getElementById('attendanceStatusText').innerText = `Checked In: ${loggedInUser.checkInTime} | Checked Out: ${loggedInUser.checkOutTime}`;
+        document.getElementById('workingHoursText').innerText = `Completed (${loggedInUser.totalWorkHours || 'Done'}) 🔴`;
+        document.getElementById('checkOutBtn').classList.add('hidden');
+      } else {
+        document.getElementById('attendanceStatusText').innerText = `🟢 Checked In Today at: ${loggedInUser.checkInTime}`;
+        document.getElementById('workingHoursText').innerText = "Active Working 🟢";
+      }
+
+      renderClientTable();
+    }
+
+    // Check-Out with Strict 5 PM - 6 PM Time Window Rule & Auto Hour Calculation
+    function handleCheckOut() {
+      const now = new Date();
+      const currentHour = now.getHours(); // 24-hour format
+
+      // Strict Condition: 5:00 PM (17) to 6:00 PM (18)
+      if (currentHour < 17) {
+        alert("⚠️ Check-Out abhi allowed nahi hai! Check-Out window shaam 5:00 PM se 6:00 PM ke beech active hogi.");
+        return;
+      }
+      if (currentHour >= 18) {
+        alert("⚠️ Check-Out window (5:00 PM - 6:00 PM) close ho chuki hai!");
+        return;
+      }
+
+      if(!confirm("Kya aap aaj ka Check-Out karna chahte hain?")) return;
+
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      const empIndex = employees.findIndex(e => e.id === loggedInUser.id);
+
+      // Calculate Total Hours
+      let durationStr = "N/A";
+      if(loggedInUser.checkInTimestamp) {
+        const diffMs = now.getTime() - loggedInUser.checkInTimestamp;
+        const totalMinutes = Math.floor(diffMs / (1000 * 60));
+        const hrs = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        durationStr = `${hrs} hrs ${mins} mins`;
+      }
+
+      if(empIndex !== -1) {
+        employees[empIndex].checkOutTime = timeStr;
+        employees[empIndex].totalWorkHours = durationStr;
+        employees[empIndex].isCheckedIn = true;
+        loggedInUser = employees[empIndex];
+        saveEmployeesToStorage();
+      }
+
+      showCheckedInState();
+      alert(`🔴 Check-Out Successful at ${timeStr}\nTotal Worked Time: ${durationStr}`);
+    }
+
+    // ADD CLIENT RECORD
+    function addClientRecord(e, isBackdated) {
+      e.preventDefault();
+
+      let record = {};
+      const todayStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      if(isBackdated) {
+        const rawDate = document.getElementById('pastCallDate').value;
+        const formattedDate = new Date(rawDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        record = {
+          date: formattedDate,
+          client: document.getElementById('pastClientName').value.trim(),
+          business: document.getElementById('pastBusinessName').value.trim(),
+          mobile: document.getElementById('pastMobileNumber').value.trim(),
+          req: document.getElementById('pastRequirement').value.trim(),
+          remarks: document.getElementById('pastRemarks').value.trim() || 'Imported from notebook',
+          isOldData: true
+        };
+      } else {
+        record = {
+          date: todayStr,
+          client: document.getElementById('clientName').value.trim(),
+          business: document.getElementById('businessName').value.trim(),
+          mobile: document.getElementById('mobileNumber').value.trim(),
+          req: document.getElementById('requirement').value.trim(),
+          remarks: document.getElementById('remarks').value.trim() || 'N/A',
+          isOldData: false
+        };
+      }
+
+      const empIndex = employees.findIndex(e => e.id === loggedInUser.id);
+      if(empIndex !== -1) {
+        if(!employees[empIndex].records) employees[empIndex].records = [];
+        employees[empIndex].records.push(record);
+        saveEmployeesToStorage();
+        loggedInUser = employees[empIndex];
+      }
+
+      e.target.reset();
+      if(isBackdated) toggleBackdatedForm();
+      alert("Record Saved Successfully!");
+      renderClientTable();
+    }
+
+    function renderClientTable() {
+      const tbody = document.getElementById('clientTableBody');
+      tbody.innerHTML = '';
+
+      if(!loggedInUser.records || loggedInUser.records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No client records found.</td></tr>`;
+        document.getElementById('totalRecordCount').innerText = "0 Records";
+        return;
+      }
+
+      document.getElementById('totalRecordCount').innerText = loggedInUser.records.length + " Records";
+
+      loggedInUser.records.forEach(rec => {
+        const typeBadge = rec.isOldData 
+          ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Notebook Entry</span>`
+          : `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Live Daily Entry</span>`;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 border-b">
+            <td class="p-3 text-xs font-mono font-bold text-slate-600">${rec.date}</td>
+            <td class="p-3 font-bold text-slate-800">${rec.client}</td>
+            <td class="p-3 text-slate-700">${rec.business}</td>
+            <td class="p-3 font-mono text-blue-600 font-semibold">${rec.mobile}</td>
+            <td class="p-3 text-slate-700">${rec.req}</td>
+            <td class="p-3 text-slate-500 text-xs">${rec.remarks}</td>
+            <td class="p-3">${typeBadge}</td>
+          </tr>
+        `;
+      });
+    }
+
+    // ==================== ADMIN DASHBOARD RENDER ====================
+    function renderAdminDashboard() {
+      employees = getStoredEmployees();
+
+      // Dropdowns
+      const select = document.getElementById('dealEmpSelect');
+      const filterSelect = document.getElementById('filterEmpSelect');
+      const currentFilterVal = filterSelect.value || "all";
+
+      select.innerHTML = '<option value="">Select Employee *</option>';
+      filterSelect.innerHTML = '<option value="all">All Employees Data</option>';
+
+      employees.forEach((emp, index) => {
+        select.innerHTML += `<option value="${index}">${emp.name} (${emp.id})</option>`;
+        filterSelect.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.id})</option>`;
+      });
+
+      filterSelect.value = currentFilterVal;
+
+      // 1. ATTENDANCE & WORKING HOURS REPORT
+      const attBody = document.getElementById('adminAttendanceTable');
+      attBody.innerHTML = '';
+
+      employees.forEach(emp => {
+        const selfieImg = emp.selfie 
+          ? `<img src="${emp.selfie}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-600">`
+          : `<span class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-400">No Pic</span>`;
+
+        const checkIn = emp.checkInTime || '<span class="text-slate-400">Not Checked In</span>';
+        const checkOut = emp.checkOutTime || (emp.checkInTime ? '<span class="text-emerald-600 font-semibold">Active Working</span>' : '<span class="text-slate-400">-</span>');
+        const duration = emp.totalWorkHours || (emp.checkInTime ? 'In Progress' : '-');
+
+        let statusBadge = `<span class="bg-slate-100 text-slate-500 text-xs px-2.5 py-1 rounded-full font-bold">Offline</span>`;
+        if(emp.checkInTime && !emp.checkOutTime) {
+          statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold">🟢 Working</span>`;
+        } else if(emp.checkInTime && emp.checkOutTime) {
+          statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">🔴 Completed</span>`;
+        }
+
+        attBody.innerHTML += `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-3">${selfieImg}</td>
+            <td class="p-3 font-bold text-slate-800">${emp.name}<br><span class="text-xs text-slate-400 font-mono">${emp.id}</span></td>
+            <td class="p-3 font-mono font-semibold text-slate-700">${checkIn}</td>
+            <td class="p-3 font-mono font-semibold text-slate-700">${checkOut}</td>
+            <td class="p-3 font-mono text-xs font-bold text-blue-600">${duration}</td>
+            <td class="p-3">${statusBadge}</td>
+          </tr>
+        `;
+      });
+
+      // 2. CALL LOGS & NOTEBOOK DATA
+      const callLogsBody = document.getElementById('adminCallLogsBody');
+      callLogsBody.innerHTML = '';
+      let hasCalls = false;
+
+      employees.forEach(emp => {
+        if(currentFilterVal === "all" || currentFilterVal === emp.id) {
+          if(emp.records && emp.records.length > 0) {
+            hasCalls = true;
+            emp.records.forEach(rec => {
+              const typeBadge = rec.isOldData 
+                ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Notebook</span>`
+                : `<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Live Call</span>`;
+
+              callLogsBody.innerHTML += `
+                <tr class="hover:bg-slate-50 border-b">
+                  <td class="p-3 font-bold text-slate-800">${emp.name} <br><span class="text-[10px] text-slate-400 font-mono">${emp.id}</span></td>
+                  <td class="p-3 text-xs font-mono font-bold text-slate-600">${rec.date}</td>
+                  <td class="p-3 font-semibold text-slate-800">${rec.client}</td>
+                  <td class="p-3 text-slate-700">${rec.business}</td>
+                  <td class="p-3 font-mono text-blue-600 font-semibold">${rec.mobile}</td>
+                  <td class="p-3 text-slate-700">${rec.req}</td>
+                  <td class="p-3 text-slate-500 text-xs">${rec.remarks}</td>
+                  <td class="p-3">${typeBadge}</td>
+                </tr>
+              `;
+            });
+          }
+        }
+      });
+
+      if(!hasCalls) {
+        callLogsBody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">No client call logs found.</td></tr>`;
+      }
+
+      // 3. PAYROLL SUMMARY
+      const summaryBody = document.getElementById('adminEmpSummaryTable');
+      summaryBody.innerHTML = '';
+
+      employees.forEach((emp, empIdx) => {
+        const selfieImg = emp.selfie 
+          ? `<img src="${emp.selfie}" class="w-9 h-9 rounded-full object-cover border-2 border-blue-600">`
+          : `<span class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400">No Pic</span>`;
+
+        let totalDealsVal = 0;
+        let totalCommission = 0;
+
+        if(emp.deals) {
+          emp.deals.forEach(d => {
+            totalDealsVal += d.amount;
+            totalCommission += d.commission;
+          });
+        }
+
+        const baseSal = emp.baseSalary || 0;
+        const totalPayable = baseSal + totalCommission;
+
+        summaryBody.innerHTML += `
+          <tr>
+            <td class="p-3">${selfieImg}</td>
+            <td class="p-3 font-bold text-slate-800">${emp.name}<br><span class="text-xs text-slate-400 font-mono">${emp.id}</span></td>
+            <td class="p-3 font-semibold text-slate-700">₹${baseSal}</td>
+            <td class="p-3 font-bold text-blue-600">₹${totalDealsVal}</td>
+            <td class="p-3 font-bold text-purple-600">+ ₹${totalCommission}</td>
+            <td class="p-3 font-bold text-emerald-600">₹${totalPayable}</td>
+            <td class="p-3 text-center">
+              <button onclick="generateSalarySlip(${empIdx})" class="bg-slate-900 hover:bg-black text-white text-xs px-3 py-1.5 rounded-lg font-semibold">
+                📄 Payment Slip
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function addNewProjectDeal(e) {
+      e.preventDefault();
+      const empIdx = document.getElementById('dealEmpSelect').value;
+      const client = document.getElementById('dealClientName').value.trim();
+      const amount = parseFloat(document.getElementById('dealProjectAmount').value);
+
+      if(empIdx === "" || isNaN(amount)) {
+        alert("Please select employee & enter valid deal amount!");
+        return;
+      }
+
+      const commission = amount * 0.20;
+      const todayDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      if(!employees[empIdx].deals) employees[empIdx].deals = [];
+
+      employees[empIdx].deals.push({
+        date: todayDate,
+        client: client,
+        amount: amount,
+        commission: commission
+      });
+
+      saveEmployeesToStorage();
+      alert(`Project Deal Added! Value: ₹${amount} | 20% Commission: ₹${commission}`);
+      e.target.reset();
+      renderAdminDashboard();
+    }
+
+    function generateSalarySlip(empIdx) {
+      const emp = employees[empIdx];
+      let totalComm = 0;
+      let dealRows = '';
+
+      if(emp.deals) {
+        emp.deals.forEach(d => {
+          totalComm += d.commission;
+          dealRows += `
+            <tr class="border-b text-xs">
+              <td class="py-1">${d.date}</td>
+              <td class="py-1 font-semibold">${d.client}</td>
+              <td class="py-1 font-mono">₹${d.amount}</td>
+              <td class="py-1 font-bold text-emerald-600">₹${d.commission}</td>
+            </tr>
+          `;
+        });
+      }
+
+      const base = emp.baseSalary || 0;
+      const totalPayable = base + totalComm;
+
+      const slipContainer = document.getElementById('slipContent');
+      slipContainer.innerHTML = `
+        <div class="bg-slate-50 p-3 rounded-lg border space-y-1 text-xs">
+          <p><b>Employee Name:</b> ${emp.name}</p>
+          <p><b>Employee ID:</b> ${emp.id}</p>
+          <p><b>Statement Date:</b> ${new Date().toLocaleDateString('en-IN')}</p>
+        </div>
+
+        <div class="space-y-2">
+          <p class="font-bold text-xs uppercase text-slate-500">Converted Projects Log (20% Share)</p>
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-100 text-xs font-bold">
+              <tr>
+                <th class="py-1">Date</th>
+                <th class="py-1">Client</th>
+                <th class="py-1">Deal Amt</th>
+                <th class="py-1">20% Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${dealRows || '<tr><td colspan="4" class="text-xs text-slate-400 py-2">No closed deals found.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2">
+          <div class="flex justify-between text-xs">
+            <span>Fixed Base Salary:</span>
+            <span class="font-bold">₹${base}</span>
+          </div>
+          <div class="flex justify-between text-xs text-purple-700">
+            <span>Total 20% Project Incentive:</span>
+            <span class="font-bold">+ ₹${totalComm}</span>
+          </div>
+          <div class="flex justify-between text-base font-extrabold text-emerald-800 border-t border-emerald-200 pt-2">
+            <span>Net Payable Amount:</span>
+            <span>₹${totalPayable}</span>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('salarySlipModal').classList.remove('hidden');
+    }
+
+    function closeSalaryModal() {
+      document.getElementById('salarySlipModal').classList.add('hidden');
+    }
+
+    function clearAllSystemData() {
+      if (confirm("Kya aap sach me saara old/test data delete karna chahte hain?")) {
+        localStorage.removeItem('agency_employees');
+        alert("Saara data clear ho gaya hai!");
+        location.reload();
+      }
+    }
+
+    function addEmployee(e) {
+      e.preventDefault();
+      employees.push({
+        id: document.getElementById('newEmpId').value.trim(),
+        name: document.getElementById('newEmpName').value.trim(),
+        user: document.getElementById('newEmpUser').value.trim(),
+        pass: document.getElementById('newEmpPass').value.trim(),
+        baseSalary: parseFloat(document.getElementById('newEmpBaseSalary').value) || 0,
+        selfie: null,
+        checkInTime: null,
+        checkInTimestamp: null,
+        checkOutTime: null,
+        totalWorkHours: null,
+        isCheckedIn: false,
+        records: [],
+        deals: []
+      });
+      saveEmployeesToStorage();
+      alert("Employee Registered Successfully!");
+      e.target.reset();
+      renderAdminDashboard();
+    }
+  </script>
+</body>
+</html>
